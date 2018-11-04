@@ -62,6 +62,9 @@ digistuff.update_ts_formspec = function(pos, ...)
             else
                 meta:set_string('formspec', formspec)
             end
+        elseif name ~= 'ignore' then
+            nodes[node] = nil
+            save = true
         end
     end
 
@@ -93,16 +96,22 @@ wireless_touchscreens.on_receive_fields = function(pos,formname,fields,sender)
     --    changed
     if remote and owner then
         minetest.forceload_block(remote, true)
+        local name = minetest.get_node(remote).name
         if minetest.is_protected(remote, owner) or not
-          wireless_touchscreens.parents[minetest.get_node(remote).name]
+          wireless_touchscreens.parents[name]
           then
             minetest.forceload_free_block(remote, true)
             storage:set_string(minetest.pos_to_string(remote), '')
             -- TODO: Make this close_formspec more specific.
             minetest.close_formspec(victim, '')
-            minetest.chat_send_player(victim,
-                'The remote touchscreen is no longer accessible!')
-            wireless_touchscreens.on_construct(pos)
+            if name ~= 'ignore' then
+                minetest.chat_send_player(victim,
+                    'The remote touchscreen is no longer accessible!')
+                wireless_touchscreens.on_construct(pos)
+            else
+                minetest.chat_send_player(victim,
+                    'The remote touchscreen is not loaded!')
+            end
         else
             digistuff.ts_on_receive_fields(remote, formname, fields, sender)
         end
