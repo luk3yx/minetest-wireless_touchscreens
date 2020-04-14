@@ -69,7 +69,6 @@ digistuff.update_ts_formspec = function(pos, ...)
     end
 
     if not any then
-        minetest.forceload_free_block(remote, true)
         storage:set_string(spos, '')
     elseif save then
         storage:set_string(spos, minetest.serialize(nodes))
@@ -95,12 +94,9 @@ wireless_touchscreens.on_receive_fields = function(pos,formname,fields,sender)
     -- Forward fields onto digistuff if the touchscreen protection hasn't
     --    changed
     if remote and owner then
-        minetest.forceload_block(remote, true)
         local name = minetest.get_node(remote).name
         if minetest.is_protected(remote, owner) or not
-          wireless_touchscreens.parents[name]
-          then
-            minetest.forceload_free_block(remote, true)
+                wireless_touchscreens.parents[name] then
             storage:set_string(minetest.pos_to_string(remote), '')
             -- TODO: Make this close_formspec more specific.
             minetest.close_formspec(victim, '')
@@ -127,14 +123,12 @@ wireless_touchscreens.on_receive_fields = function(pos,formname,fields,sender)
         return minetest.chat_send_player(victim, 'Invalid position!')
     end
 
-    minetest.forceload_block(remote, true)
-
     local name = minetest.get_node(remote).name
     if wireless_touchscreens.check_protection(remote, victim) then
-        return minetest.forceload_free_block(remote, true)
+        return
     elseif not wireless_touchscreens.parents[name] then
         minetest.chat_send_player(victim, 'That block is not a touchscreen!')
-        return minetest.forceload_free_block(remote, true)
+        return
     end
 
     local sremote = minetest.pos_to_string(remote)
